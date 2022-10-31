@@ -139,7 +139,7 @@ describe('CommentRepositoryPostgres', () => {
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Act & Assert
-      await expect(commentRepositoryPostgres.checkCommentIsExist({ threadId: 'thread-123', commentId: 'comment-456' })).resolves.toBeUndefined();
+      await expect(commentRepositoryPostgres.checkCommentIsExist({ threadId: 'thread-123', commentId: 'comment-456' })).resolves.not.toThrow(NotFoundError);
     });
   });
 

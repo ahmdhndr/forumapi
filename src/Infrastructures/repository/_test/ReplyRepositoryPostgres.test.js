@@ -148,4 +148,44 @@ describe('ReplyRepositoryPostgres', () => {
       await expect(replyRepositoryPostgres.verifyReplyAccess({ replyId: 'reply-123', ownerId: 'user-123' })).resolves.not.toThrow(AuthorizationError);
     });
   });
+
+  describe('getRepliesByThreadId function', () => {
+    it('should return all replies in a thread', async () => {
+      // Arrange
+      await UsersTableTestHelper.addUser({ id: 'user-456', username: 'johndoe' });
+      await UsersTableTestHelper.addUser({ id: 'user-789', username: 'janedoe' });
+
+      await ThreadsTableTestHelper.addThread({ id: 'thread-456', owner: 'user-123' });
+
+      // await CommentsTableTestHelper.addComment({
+      // id: 'comment-123', owner: 'user-456', threadId: 'thread-456';
+      // });
+      await CommentsTableTestHelper.addComment({ id: 'comment-456', owner: 'user-789', threadId: 'thread-456' });
+
+      const replies = [
+        {
+          id: 'reply-123', commentId: 'comment-456', content: 'Balasan a', date: '2021',
+        },
+        {
+          id: 'reply-456', commentId: 'comment-456', content: 'Balasan b', date: '2022',
+        },
+      ];
+
+      const expectedReplies = [
+        { ...replies[0], username: 'johndoe' },
+        { ...replies[1], username: 'janedoe' },
+      ];
+
+      await RepliesTableTestHelper.addReply({ ...replies[0], owner: 'user-456' });
+      await RepliesTableTestHelper.addReply({ ...replies[1], owner: 'user-789' });
+
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action
+      const listOfReplies = await replyRepositoryPostgres.getRepliesByThreadId('thread-456');
+
+      // Assert
+      expect(listOfReplies).toEqual(expectedReplies);
+    });
+  });
 });

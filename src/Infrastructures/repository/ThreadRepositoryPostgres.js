@@ -24,7 +24,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return new AddedThread({ ...result.rows[0] });
   }
 
-  async getThreadById(id) {
+  async verifyThreadAvailability(id) {
     const query = {
       text: `SELECT threads.id, threads.title, threads.body, threads.date, users.username
               FROM threads
@@ -40,22 +40,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     }
 
     return result.rows[0];
-  }
-
-  async getRepliesByThreadId(id) {
-    const query = {
-      text: `SELECT replies.id, comments.id AS comment_id, replies.content, replies.date, users.username
-              FROM replies
-              INNER JOIN comments ON replies.comment_id = comments.id
-              INNER JOIN users ON replies.owner = users.id
-              WHERE comments.thread_id = $1
-              ORDER BY replies.date ASC
-              `,
-      values: [id],
-    };
-
-    const result = await this._pool.query(query);
-    return result.rows.map((reply) => new DetailReply({ ...reply, commentId: reply.comment_id }));
   }
 }
 

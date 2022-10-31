@@ -1,6 +1,7 @@
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AddedReply = require('../../Domains/replies/entities/AddedReply');
+const DetailReply = require('../../Domains/replies/entities/DetailReply');
 
 class ReplyRepositoryPostgres {
   constructor(pool, idGenerator) {
@@ -23,10 +24,7 @@ class ReplyRepositoryPostgres {
 
   async deleteReplyById(replyId) {
     const query = {
-      text: `UPDATE replies
-            SET is_deleted = TRUE,
-                content = '**balasan telah dihapus**'
-            WHERE id = $1 RETURNING id`,
+      text: 'UPDATE replies SET is_deleted = TRUE WHERE id = $1 RETURNING id',
       values: [replyId],
     };
 
@@ -65,6 +63,26 @@ class ReplyRepositoryPostgres {
     if (!result.rows.length) {
       throw new AuthorizationError('Anda tidak memiliki izin untuk melakukan aksi ini');
     }
+  }
+
+  async getRepliesByThreadId(id) {
+    const query = {
+      text: `SELECT replies.id, comments.id AS comment_id,
+              CASE
+                  WHEN replies.is_deleted = TRUE THEN '**balasan telah dihapus**'
+                  ELSE replies.content END AS content,
+              replies.date, users.username
+              FROM replies
+              INNER JOIN comments ON replies.comment_id = comments.id
+              INNER JOIN users ON replies.owner = users.id
+              WHERE comments.thread_id = $1
+              ORDER BY replies.date ASC
+              `,
+      values: [id],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows.map((reply) => new DetailReply({ ...reply, commentId: reply.comment_id }));
   }
 }
 

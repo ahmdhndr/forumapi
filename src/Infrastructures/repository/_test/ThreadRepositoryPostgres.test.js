@@ -79,7 +79,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('getThreadById function', () => {
+  describe('verifyThreadAvailability function', () => {
     it('should throw NotFoundError when thread is not available', async () => {
       // Arrange
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool);
@@ -87,7 +87,7 @@ describe('ThreadRepositoryPostgres', () => {
       await ThreadsTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
 
       // Action & Assert
-      await expect(threadRepositoryPostgres.getThreadById('thread-not-available'))
+      await expect(threadRepositoryPostgres.verifyThreadAvailability('thread-not-available'))
         .rejects.toThrow(NotFoundError);
     });
 
@@ -112,63 +112,11 @@ describe('ThreadRepositoryPostgres', () => {
       await ThreadsTableTestHelper.addThread(newThreadPayload);
 
       // Action
-      const getThread = await threadRepositoryPostgres.getThreadById('thread-123');
+      const getThread = await threadRepositoryPostgres
+        .verifyThreadAvailability('thread-123');
 
       // Assert
       expect(getThread).toStrictEqual(expectedDetailThread);
-    });
-  });
-
-  describe('getRepliesByThreadId function', () => {
-    it('should return all replies in a thread', async () => {
-      // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'erudev' });
-      await UsersTableTestHelper.addUser({ id: 'user-456', username: 'johndoe' });
-
-      await ThreadsTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
-
-      await CommentsTableTestHelper.addComment({ id: 'comment-123', owner: 'user-123', threadId: 'thread-123' });
-      await CommentsTableTestHelper.addComment({ id: 'comment-456', owner: 'user-456', threadId: 'thread-123' });
-
-      const replies = [
-        {
-          id: 'reply-123', commentId: 'comment-123', content: 'Balasan a', date: '2021',
-        },
-        {
-          id: 'reply-456', commentId: 'comment-123', content: 'Balasan b', date: '2022',
-        },
-      ];
-
-      const expectedReplies = [
-        { ...replies[0], username: 'johndoe' },
-        { ...replies[1], username: 'erudev' },
-      ];
-
-      // const expectedReplies = [
-      //   {
-      //     id: 'reply-123',
-      //     content: 'Balasan a',
-      //     date: '2021',
-      //     username: 'erudev',
-      //   },
-      //   {
-      //     id: 'reply-456',
-      //     content: 'Balasan b',
-      //     date: '2022',
-      //     username: 'johndoe',
-      //   },
-      // ];
-
-      await RepliesTableTestHelper.addReply({ ...replies[0], owner: 'user-456' });
-      await RepliesTableTestHelper.addReply({ ...replies[1], owner: 'user-123' });
-
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
-
-      // Action
-      const listOfReplies = await threadRepositoryPostgres.getRepliesByThreadId('thread-123');
-
-      // Assert
-      expect(listOfReplies).toEqual(expectedReplies);
     });
   });
 });

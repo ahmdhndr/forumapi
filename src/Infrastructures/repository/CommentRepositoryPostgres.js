@@ -23,7 +23,11 @@ class CommentRepositoryPostgres {
 
   async getCommentsByThreadId(threadId) {
     const query = {
-      text: `SELECT comments.id, comments.content, comments.date, users.username
+      text: `SELECT comments.id,
+              CASE
+                  WHEN comments.is_deleted = TRUE THEN '**komentar telah dihapus**'
+                  ELSE comments.content END AS content,
+              comments.date, users.username
               FROM comments
               INNER JOIN users ON comments.owner = users.id
               WHERE comments.thread_id = $1
@@ -64,10 +68,7 @@ class CommentRepositoryPostgres {
 
   async deleteCommentById(commentId) {
     const query = {
-      text: `UPDATE comments
-              SET is_deleted = TRUE,
-                  content = '**komentar telah dihapus**'
-              WHERE id = $1 RETURNING id`,
+      text: 'UPDATE comments SET is_deleted = TRUE WHERE id = $1 RETURNING id',
       values: [commentId],
     };
 

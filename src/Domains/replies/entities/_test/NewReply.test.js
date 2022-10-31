@@ -33,6 +33,8 @@ describe('NewReply entities', () => {
     const newReply = new NewReply(payload);
 
     // Assert
+    expect(newReply.commentId).toEqual(payload.commentId);
     expect(newReply.content).toEqual(payload.content);
+    expect(newReply.owner).toEqual(payload.owner);
   });
 });

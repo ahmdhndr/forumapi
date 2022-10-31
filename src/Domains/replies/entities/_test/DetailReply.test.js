@@ -41,6 +41,7 @@ describe('DetailReply entities', () => {
 
     // Assert
     expect(detailReply.id).toEqual(payload.id);
+    expect(detailReply.commentId).toEqual(payload.commentId);
     expect(detailReply.content).toEqual(payload.content);
     expect(detailReply.username).toEqual(payload.username);
     expect(detailReply.date).toEqual(payload.date);

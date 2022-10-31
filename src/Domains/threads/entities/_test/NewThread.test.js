@@ -33,10 +33,11 @@ describe('A NewThread entities', () => {
     };
 
     // Action
-    const { title, body } = new NewThread(payload);
+    const newThread = new NewThread(payload);
 
     // Assert
-    expect(title).toEqual(payload.title);
-    expect(body).toEqual(payload.body);
+    expect(newThread.title).toEqual(payload.title);
+    expect(newThread.body).toEqual(payload.body);
+    expect(newThread.owner).toEqual(payload.owner);
   });
 });
