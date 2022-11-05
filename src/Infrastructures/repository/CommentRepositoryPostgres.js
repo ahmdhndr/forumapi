@@ -1,6 +1,7 @@
 const AuthorizationError = require('../../Commons/exceptions/AuthorizationError');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const AddedComment = require('../../Domains/comments/entities/AddedComment');
+const DetailComment = require('../../Domains/comments/entities/DetailComment');
 
 class CommentRepositoryPostgres {
   constructor(pool, idGenerator) {
@@ -23,11 +24,7 @@ class CommentRepositoryPostgres {
 
   async getCommentsByThreadId(threadId) {
     const query = {
-      text: `SELECT comments.id,
-              CASE
-                  WHEN comments.is_deleted = TRUE THEN '**komentar telah dihapus**'
-                  ELSE comments.content END AS content,
-              comments.date, users.username
+      text: `SELECT comments.id, comments.content, comments.date, comments.is_deleted, users.username
               FROM comments
               INNER JOIN users ON comments.owner = users.id
               WHERE comments.thread_id = $1
@@ -50,7 +47,7 @@ class CommentRepositoryPostgres {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('komentar tidak ditemukan');
     }
   }
@@ -61,7 +58,7 @@ class CommentRepositoryPostgres {
       values: [commentId, ownerId],
     };
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new AuthorizationError('Anda tidak memiliki izin untuk melakukan aksi ini');
     }
   }
@@ -74,7 +71,7 @@ class CommentRepositoryPostgres {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('tidak dapat menghapus komentar karena komentar tidak ada');
     }
   }

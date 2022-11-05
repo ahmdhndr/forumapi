@@ -57,22 +57,6 @@ describe('ReplyRepositoryPostgres', () => {
   });
 
   describe('deleteReplyById function', () => {
-    it('should not throw NotFoundError when reply id is valid or found', async () => {
-      // Arrange
-      const addedReply = {
-        id: 'reply-123',
-        commentId: 'comment-123',
-      };
-      await RepliesTableTestHelper.addReply({
-        id: addedReply.id, commentId: addedReply.commentId,
-      });
-
-      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
-
-      // Action & Assert
-      await expect(replyRepositoryPostgres.deleteReplyById(addedReply.id)).resolves.toBeUndefined();
-    });
-
     it('should update is_deleted column as true in database', async () => {
       // Arrange
       const addedReply = {
@@ -125,7 +109,7 @@ describe('ReplyRepositoryPostgres', () => {
         threadId: 'thread-123',
         commentId: 'comment-123',
         replyId: 'reply-123',
-      })).resolves.toBeUndefined();
+      })).resolves.not.toThrow(NotFoundError);
     });
   });
 
@@ -157,9 +141,6 @@ describe('ReplyRepositoryPostgres', () => {
 
       await ThreadsTableTestHelper.addThread({ id: 'thread-456', owner: 'user-123' });
 
-      // await CommentsTableTestHelper.addComment({
-      // id: 'comment-123', owner: 'user-456', threadId: 'thread-456';
-      // });
       await CommentsTableTestHelper.addComment({ id: 'comment-456', owner: 'user-789', threadId: 'thread-456' });
 
       const replies = [

@@ -30,7 +30,7 @@ class ReplyRepositoryPostgres {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('tidak dapat menghapus balasan karena balasan tidak ada');
     }
   }
@@ -49,7 +49,7 @@ class ReplyRepositoryPostgres {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('balasan tidak ditemukan');
     }
   }
@@ -60,18 +60,15 @@ class ReplyRepositoryPostgres {
       values: [replyId, ownerId],
     };
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new AuthorizationError('Anda tidak memiliki izin untuk melakukan aksi ini');
     }
   }
 
   async getRepliesByThreadId(id) {
     const query = {
-      text: `SELECT replies.id, comments.id AS comment_id,
-              CASE
-                  WHEN replies.is_deleted = TRUE THEN '**balasan telah dihapus**'
-                  ELSE replies.content END AS content,
-              replies.date, users.username
+      text: `SELECT replies.id, comments.id AS comment_id, replies.content,
+  replies.date, replies.is_deleted, users.username
               FROM replies
               INNER JOIN comments ON replies.comment_id = comments.id
               INNER JOIN users ON replies.owner = users.id
@@ -82,7 +79,10 @@ class ReplyRepositoryPostgres {
     };
 
     const result = await this._pool.query(query);
-    return result.rows.map((reply) => new DetailReply({ ...reply, commentId: reply.comment_id }));
+    return result.rows.map((reply) => new DetailReply({
+      ...reply,
+      commentId: reply.comment_id,
+    }));
   }
 }
 

@@ -27,7 +27,7 @@ class DetailThread {
       || typeof body !== 'string'
       || typeof username !== 'string'
       || typeof date !== 'string'
-      || (!Array.isArray(comments))
+      || !(Array.isArray(comments))
     ) {
       throw new Error('DETAIL_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
     }

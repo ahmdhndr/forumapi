@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 exports.up = (pgm) => {
   pgm.createTable('threads', {
     id: {
@@ -23,7 +21,6 @@ exports.up = (pgm) => {
     },
   });
 
-  // memberikan constraint foreign key pada owner terhadap kolom id dari tabel users
   pgm.addConstraint(
     'threads',
     'fk_threads.owner_users.id',
@@ -32,9 +29,6 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-  // menghapus constraint fk_threads.owner_users.id pada tabel threads
   pgm.dropConstraint('threads', 'fk_threads.owner_users.id');
-
-  // menghapus tabel threads
   pgm.dropTable('threads');
 };

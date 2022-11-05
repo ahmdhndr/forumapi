@@ -22,7 +22,7 @@ describe('GetDetailThreadUseCase', () => {
       comments: [],
     });
 
-    const expectedComments = [
+    const expectedDetailComment = [
       new DetailComment({
         id: 'comment-123',
         username: 'erudev',
@@ -32,36 +32,42 @@ describe('GetDetailThreadUseCase', () => {
       }),
       new DetailComment({
         id: 'comment-456',
-        username: 'johndoe',
-        content: 'Komentar B',
-        date: '2021',
+        username: 'erudev',
+        content: '**komentar telah dihapus**',
+        date: '2022',
         replies: [],
       }),
     ];
 
-    const listOfReplies = [
+    const expectedDetailReply = [
       new DetailReply({
         id: 'reply-123',
         commentId: 'comment-123',
-        content: 'Balasan A',
+        content: '**balasan telah dihapus**',
         date: '2022',
         username: 'janedoe',
       }),
       new DetailReply({
         id: 'reply-456',
         commentId: 'comment-456',
-        content: 'Balasan B',
-        date: '2021',
-        username: 'erudev',
+        content: 'Balasan A',
+        date: '2022',
+        username: 'janedoe',
       }),
     ];
 
-    const { commentId: commentIdReplyA, ...filteredDetailReplyA } = listOfReplies[0];
-    const { commentId: commentIdReplyB, ...filteredDetailReplyB } = listOfReplies[1];
+    const { is_deleted: isCommentDeletedA, ...detailCommentA } = expectedDetailComment[0];
+    const { is_deleted: isCommentDeletedB, ...detailCommentB } = expectedDetailComment[1];
+    const {
+      is_deleted: isReplyDeletedA, commentId: commentIdReplyA, ...detailReplyA
+    } = expectedDetailReply[0];
+    const {
+      is_deleted: isReplyDeletedB, commentId: commentIdReplyB, ...detailReplyB
+    } = expectedDetailReply[1];
 
     const expectedCommentsAndReplies = [
-      { ...expectedComments[0], replies: [filteredDetailReplyA] },
-      { ...expectedComments[1], replies: [filteredDetailReplyB] },
+      { ...detailCommentA, replies: [detailReplyA] },
+      { ...detailCommentB, replies: [detailReplyB] },
     ];
 
     /* creating dependency of use case */
@@ -71,14 +77,17 @@ describe('GetDetailThreadUseCase', () => {
 
     /* mocking needed function */
     mockThreadRepository.verifyThreadAvailability = jest.fn()
-      .mockImplementation(() => Promise.resolve(new DetailThread({
+      .mockImplementation(() => Promise.resolve());
+
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve({
         id: 'thread-123',
         title: 'Sebuah judul',
         body: 'Isi thread',
         username: 'dicoding',
         date: '2022',
         comments: [],
-      })));
+      }));
 
     mockCommentRepository.getCommentsByThreadId = jest.fn()
       .mockImplementation(() => Promise.resolve([
@@ -87,14 +96,14 @@ describe('GetDetailThreadUseCase', () => {
           username: 'erudev',
           content: 'Komentar A',
           date: '2022',
-          replies: [],
+          is_deleted: false,
         },
         {
           id: 'comment-456',
-          username: 'johndoe',
+          username: 'erudev',
           content: 'Komentar B',
-          date: '2021',
-          replies: [],
+          date: '2022',
+          is_deleted: true,
         },
       ]));
 
@@ -106,13 +115,15 @@ describe('GetDetailThreadUseCase', () => {
           content: 'Balasan A',
           date: '2022',
           username: 'janedoe',
+          is_deleted: true,
         },
         {
           id: 'reply-456',
           commentId: 'comment-456',
-          content: 'Balasan B',
-          date: '2021',
-          username: 'erudev',
+          content: 'Balasan A',
+          date: '2022',
+          username: 'janedoe',
+          is_deleted: false,
         },
       ]));
 
@@ -124,13 +135,214 @@ describe('GetDetailThreadUseCase', () => {
     });
 
     // Action
-    const useCaseResult = await getDetailThreadUseCase.execute(useCaseParams);
+    const detailThread = await getDetailThreadUseCase.execute(useCaseParams);
 
     // Assert
-    expect(useCaseResult).toEqual(new DetailThread({
+    expect(detailThread).toEqual(new DetailThread({
       ...expectedDetailThread, comments: expectedCommentsAndReplies,
     }));
     expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith(useCaseParams.threadId);
+    expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseParams.threadId);
+    expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCaseParams.threadId);
+    expect(mockReplyRepository.getRepliesByThreadId).toBeCalledWith(useCaseParams.threadId);
+  });
+
+  it('should return comments with content \'**komentar telah dihapus**\' when is_deleted is true', async () => {
+    // Arrange
+    const useCaseParams = {
+      threadId: 'thread-123',
+    };
+
+    const expectedDetailThread = new DetailThread({
+      id: 'thread-123',
+      title: 'Sebuah judul',
+      body: 'Isi thread',
+      username: 'dicoding',
+      date: '2022',
+      comments: [],
+    });
+
+    const expectedDetailComment = new DetailComment({
+      id: 'comment-123',
+      username: 'erudev',
+      content: '**komentar telah dihapus**',
+      date: '2022',
+      replies: [],
+    });
+
+    const expectedDetailReply = new DetailReply({
+      id: 'reply-123',
+      commentId: 'comment-123',
+      content: 'Balasan A',
+      date: '2022',
+      username: 'janedoe',
+    });
+
+    const { is_deleted: isCommentDeleted, ...detailComment } = expectedDetailComment;
+    const { is_deleted: isReplyDeleted, commentId, ...detailReply } = expectedDetailReply;
+
+    const expectedCommentsAndReplies = [
+      { ...detailComment, replies: [detailReply] },
+    ];
+
+    /* creating dependency of use case */
+    const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
+
+    /* mocking needed function */
+    mockThreadRepository.verifyThreadAvailability = jest.fn()
+      .mockImplementation(() => Promise.resolve());
+
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve({
+        id: 'thread-123',
+        title: 'Sebuah judul',
+        body: 'Isi thread',
+        username: 'dicoding',
+        date: '2022',
+        comments: [],
+      }));
+
+    mockCommentRepository.getCommentsByThreadId = jest.fn()
+      .mockImplementation(() => Promise.resolve([
+        {
+          id: 'comment-123',
+          username: 'erudev',
+          content: 'Komentar A',
+          date: '2022',
+          is_deleted: true,
+        },
+      ]));
+
+    mockReplyRepository.getRepliesByThreadId = jest.fn()
+      .mockImplementation(() => Promise.resolve([
+        {
+          id: 'reply-123',
+          commentId: 'comment-123',
+          content: 'Balasan A',
+          date: '2022',
+          username: 'janedoe',
+          is_deleted: false,
+        },
+      ]));
+
+    /* creating use case instance */
+    const getDetailThreadUseCase = new GetDetailThreadUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
+    });
+
+    // Action
+    const detailThread = await getDetailThreadUseCase.execute(useCaseParams);
+
+    // Assert
+    expect(detailThread).toEqual(new DetailThread({
+      ...expectedDetailThread, comments: expectedCommentsAndReplies,
+    }));
+    expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith(useCaseParams.threadId);
+    expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseParams.threadId);
+    expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCaseParams.threadId);
+    expect(mockReplyRepository.getRepliesByThreadId).toBeCalledWith(useCaseParams.threadId);
+  });
+
+  it('should return replies with content \'**balasan telah dihapus**\' when is_deleted is true', async () => {
+    // Arrange
+    const useCaseParams = {
+      threadId: 'thread-123',
+    };
+
+    const expectedDetailThread = new DetailThread({
+      id: 'thread-123',
+      title: 'Sebuah judul',
+      body: 'Isi thread',
+      username: 'dicoding',
+      date: '2022',
+      comments: [],
+    });
+
+    const expectedDetailComment = new DetailComment({
+      id: 'comment-123',
+      username: 'erudev',
+      content: 'Komentar A',
+      date: '2022',
+      replies: [],
+    });
+
+    const expectedDetailReply = new DetailReply({
+      id: 'reply-123',
+      commentId: 'comment-123',
+      content: '**balasan telah dihapus**',
+      date: '2022',
+      username: 'janedoe',
+    });
+
+    const { is_deleted: isCommentDeleted, ...detailComment } = expectedDetailComment;
+    const { is_deleted: isReplyDeleted, commentId, ...detailReply } = expectedDetailReply;
+
+    const expectedCommentsAndReplies = [
+      { ...detailComment, replies: [detailReply] },
+    ];
+
+    /* creating dependency of use case */
+    const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
+
+    /* mocking needed function */
+    mockThreadRepository.verifyThreadAvailability = jest.fn()
+      .mockImplementation(() => Promise.resolve());
+
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve({
+        id: 'thread-123',
+        title: 'Sebuah judul',
+        body: 'Isi thread',
+        username: 'dicoding',
+        date: '2022',
+        comments: [],
+      }));
+
+    mockCommentRepository.getCommentsByThreadId = jest.fn()
+      .mockImplementation(() => Promise.resolve([
+        {
+          id: 'comment-123',
+          username: 'erudev',
+          content: 'Komentar A',
+          date: '2022',
+          is_deleted: false,
+        },
+      ]));
+
+    mockReplyRepository.getRepliesByThreadId = jest.fn()
+      .mockImplementation(() => Promise.resolve([
+        {
+          id: 'reply-123',
+          commentId: 'comment-123',
+          content: 'Balasan A',
+          date: '2022',
+          username: 'janedoe',
+          is_deleted: true,
+        },
+      ]));
+
+    /* creating use case instance */
+    const getDetailThreadUseCase = new GetDetailThreadUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommentRepository,
+      replyRepository: mockReplyRepository,
+    });
+
+    // Action
+    const detailThread = await getDetailThreadUseCase.execute(useCaseParams);
+
+    // Assert
+    expect(detailThread).toEqual(new DetailThread({
+      ...expectedDetailThread, comments: expectedCommentsAndReplies,
+    }));
+    expect(mockThreadRepository.verifyThreadAvailability).toBeCalledWith(useCaseParams.threadId);
+    expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseParams.threadId);
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCaseParams.threadId);
     expect(mockReplyRepository.getRepliesByThreadId).toBeCalledWith(useCaseParams.threadId);
   });
