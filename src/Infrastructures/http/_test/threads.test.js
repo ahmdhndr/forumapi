@@ -12,7 +12,6 @@ describe('/threads endpoint', () => {
     await UsersTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await CommentsTableTestHelper.cleanTable();
-    // await RepliesTableTestHelper.cleanTable();
   });
 
   afterAll(async () => {
@@ -155,6 +154,38 @@ describe('/threads endpoint', () => {
       expect(responseJson.data.thread.comments).toHaveLength(2);
       expect(responseJson.data.thread.comments[0].replies).toHaveLength(1);
       expect(responseJson.data.thread.comments[1].replies).toHaveLength(1);
+    });
+
+    it('should return 200 with thread details, and deleted comment array', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      const threadId = 'thread-123';
+
+      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'erudev' });
+      await UsersTableTestHelper.addUser({ id: 'user-456', username: 'johndoe' });
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: 'user-123' });
+      await CommentsTableTestHelper.addComment({
+        id: 'comment-123', threadId, owner: 'user-123', isDeleted: true,
+      });
+      await RepliesTableTestHelper.addReply({
+        id: 'reply-123', commentId: 'comment-123', owner: 'user-123', isDeleted: true,
+      });
+      await RepliesTableTestHelper.addReply({ id: 'reply-456', commentId: 'comment-123', owner: 'user-123' });
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${threadId}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.thread).toBeDefined();
+      expect(responseJson.data.thread.comments).toHaveLength(1);
+      expect(responseJson.data.thread.comments[0].replies).toHaveLength(2);
     });
 
     it('should respond 200 with thread details empty comments', async () => {

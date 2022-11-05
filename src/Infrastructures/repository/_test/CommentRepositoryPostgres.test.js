@@ -53,7 +53,7 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('deleteCommentById function', () => {
-    it('should be able to delete added comment by id', async () => {
+    it('should update is_deleted column in database to true', async () => {
       // Arrange
       const addedComment = {
         id: 'comment-123',
@@ -105,8 +105,8 @@ describe('CommentRepositoryPostgres', () => {
 
       // Assert
       expect(listOfComments).toEqual([
-        { ...aComment, username: 'erudev' },
-        { ...bComment, username: 'erudev' },
+        { ...aComment, username: 'erudev', is_deleted: false },
+        { ...bComment, username: 'erudev', is_deleted: false },
       ]);
     });
 
@@ -159,7 +159,8 @@ describe('CommentRepositoryPostgres', () => {
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Act & Assert
-      await expect(commentRepositoryPostgres.verifyCommentAccess({ commentId: 'comment-123', ownerId: 'user-123' })).resolves.toBeUndefined();
+      await expect(commentRepositoryPostgres.verifyCommentAccess({ commentId: 'comment-123', ownerId: 'user-123' }))
+        .resolves.not.toThrow(AuthorizationError);
     });
   });
 });

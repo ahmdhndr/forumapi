@@ -30,7 +30,7 @@ describe('DetailComment entities', () => {
     // Arrange
     const payload = {
       id: 'comment-123',
-      username: 'someuser',
+      username: 'erudev',
       content: 'Sebuah komentar',
       date: '2022',
       replies: [],
