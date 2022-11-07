@@ -44,8 +44,8 @@ describe('GetDetailThreadUseCase', () => {
         id: 'reply-123',
         commentId: 'comment-123',
         content: '**balasan telah dihapus**',
-        date: '2022',
         username: 'janedoe',
+        date: '2022',
       }),
       new DetailReply({
         id: 'reply-456',
@@ -56,14 +56,10 @@ describe('GetDetailThreadUseCase', () => {
       }),
     ];
 
-    const { is_deleted: isCommentDeletedA, ...detailCommentA } = expectedDetailComment[0];
-    const { is_deleted: isCommentDeletedB, ...detailCommentB } = expectedDetailComment[1];
-    const {
-      is_deleted: isReplyDeletedA, commentId: commentIdReplyA, ...detailReplyA
-    } = expectedDetailReply[0];
-    const {
-      is_deleted: isReplyDeletedB, commentId: commentIdReplyB, ...detailReplyB
-    } = expectedDetailReply[1];
+    const { ...detailCommentA } = expectedDetailComment[0];
+    const { ...detailCommentB } = expectedDetailComment[1];
+    const { ...detailReplyA } = expectedDetailReply[0];
+    const { ...detailReplyB } = expectedDetailReply[1];
 
     const expectedCommentsAndReplies = [
       { ...detailCommentA, replies: [detailReplyA] },
@@ -178,8 +174,8 @@ describe('GetDetailThreadUseCase', () => {
       username: 'janedoe',
     });
 
-    const { is_deleted: isCommentDeleted, ...detailComment } = expectedDetailComment;
-    const { is_deleted: isReplyDeleted, commentId, ...detailReply } = expectedDetailReply;
+    const { ...detailComment } = expectedDetailComment;
+    const { ...detailReply } = expectedDetailReply;
 
     const expectedCommentsAndReplies = [
       { ...detailComment, replies: [detailReply] },
@@ -278,8 +274,8 @@ describe('GetDetailThreadUseCase', () => {
       username: 'janedoe',
     });
 
-    const { is_deleted: isCommentDeleted, ...detailComment } = expectedDetailComment;
-    const { is_deleted: isReplyDeleted, commentId, ...detailReply } = expectedDetailReply;
+    const { ...detailComment } = expectedDetailComment;
+    const { ...detailReply } = expectedDetailReply;
 
     const expectedCommentsAndReplies = [
       { ...detailComment, replies: [detailReply] },
