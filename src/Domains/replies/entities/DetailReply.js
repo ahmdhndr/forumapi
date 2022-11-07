@@ -3,12 +3,12 @@ class DetailReply {
     this._verifyPayload(payload);
 
     const {
-      id, commentId, content, username, date,
+      id, commentId, content, username, date, is_deleted: isDeleted,
     } = payload;
 
     this.id = id;
     this.commentId = commentId;
-    this.content = content;
+    this.content = isDeleted ? '**balasan telah dihapus**' : content;
     this.username = username;
     this.date = date;
   }

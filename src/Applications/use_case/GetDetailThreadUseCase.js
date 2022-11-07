@@ -1,4 +1,6 @@
 const DetailThread = require('../../Domains/threads/entities/DetailThread');
+const DetailComment = require('../../Domains/comments/entities/DetailComment');
+const DetailReply = require('../../Domains/replies/entities/DetailReply');
 
 class GetDetailThreadUseCase {
   constructor({ threadRepository, commentRepository, replyRepository }) {
@@ -17,22 +19,16 @@ class GetDetailThreadUseCase {
     const threadReplies = await this._replyRepository.getRepliesByThreadId(threadId);
 
     for (let i = 0; i < detailThread.comments.length; i += 1) {
-      const { is_deleted: isCommentDeleted, ...detailComment } = detailThread.comments[i];
-      detailThread.comments[i] = detailComment;
-      detailComment.content = isCommentDeleted
-        ? '**komentar telah dihapus**'
-        : detailComment.content;
-
-      detailComment.replies = threadReplies
-        .filter((reply) => reply.commentId === detailComment.id)
-        .map((reply) => {
-          const { commentId, is_deleted: isReplyDeleted, ...detailReply } = reply;
-          detailReply.content = isReplyDeleted
-            ? '**balasan telah dihapus**'
-            : detailReply.content;
-
-          return detailReply;
-        });
+      detailThread.comments[i] = new DetailComment({
+        id: detailThread.comments[i].id,
+        content: detailThread.comments[i].content,
+        username: detailThread.comments[i].username,
+        date: detailThread.comments[i].date,
+        is_deleted: detailThread.comments[i].is_deleted,
+        replies: threadReplies
+          .filter((reply) => reply.commentId === detailThread.comments[i].id)
+          .map((reply) => new DetailReply(reply)),
+      });
     }
 
     return new DetailThread(detailThread);

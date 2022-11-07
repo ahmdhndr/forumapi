@@ -3,12 +3,12 @@ class DetailComment {
     this._verifyPayload(payload);
 
     const {
-      id, username, content, date, replies,
+      id, username, content, date, is_deleted: isDeleted, replies,
     } = payload;
 
     this.id = id;
     this.username = username;
-    this.content = content;
+    this.content = isDeleted ? '**komentar telah dihapus**' : content;
     this.date = date;
     this.replies = replies;
   }

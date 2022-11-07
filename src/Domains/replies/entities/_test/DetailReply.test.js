@@ -34,6 +34,7 @@ describe('DetailReply entities', () => {
       content: 'Sebuah balasan',
       username: 'someuser',
       date: '2022',
+      is_deleted: false,
     };
 
     // Action
@@ -45,5 +46,23 @@ describe('DetailReply entities', () => {
     expect(detailReply.content).toEqual(payload.content);
     expect(detailReply.username).toEqual(payload.username);
     expect(detailReply.date).toEqual(payload.date);
+  });
+
+  it('should return \'**balasan telah dihapus**\' when is_deleted is true', () => {
+    // Arrange
+    const payload = {
+      id: 'reply-123',
+      commentId: 'comment-123',
+      content: 'Sebuah balasan',
+      username: 'someuser',
+      date: '2022',
+      is_deleted: true,
+    };
+
+    // Action
+    const detailReply = new DetailReply(payload);
+
+    // Assert
+    expect(detailReply.content).toEqual('**balasan telah dihapus**');
   });
 });
