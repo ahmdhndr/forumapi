@@ -8,7 +8,18 @@ const LikesTableTestHelper = {
       values: [id, commentId, owner],
     };
 
-    await pool.query(query);
+    const result = await pool.query(query);
+    return result.rows[0];
+  },
+
+  async removeLike({ id = 'like-123', commentId = 'comment-123', owner = 'user-123' }) {
+    const query = {
+      text: 'INSERT INTO likes (id, comment_id, owner) VALUES($1, $2, $3)',
+      values: [id, commentId, owner],
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0];
   },
 
   async getLikeByCommentIdAndOwner({ commentId = 'comment-123', owner = 'user-123' }) {

@@ -1,6 +1,7 @@
 const ToggleLikeCommentRepository = require('../ToggleLikeCommentUseCase');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const LikeRepository = require('../../../Domains/likes/LikeRepository');
+const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 
 describe('ToggleLikeCommentUseCase', () => {
   it('should orchestrate the toggle like comment use case action correctly', async () => {
@@ -12,10 +13,13 @@ describe('ToggleLikeCommentUseCase', () => {
     };
 
     // creating dependency of use case
+    const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockLikeRepository = new LikeRepository();
 
     // mocking needed function
+    mockThreadRepository.verifyThreadAvailability = jest.fn()
+      .mockImplementation(() => Promise.resolve());
     mockCommentRepository.checkCommentIsExist = jest.fn()
       .mockImplementation(() => Promise.resolve());
     mockLikeRepository.toggleLike = jest.fn()
@@ -23,6 +27,7 @@ describe('ToggleLikeCommentUseCase', () => {
 
     // creating use case instance
     const toggleLikeCommentUseCase = new ToggleLikeCommentRepository({
+      threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       likeRepository: mockLikeRepository,
     });
@@ -31,6 +36,8 @@ describe('ToggleLikeCommentUseCase', () => {
     await toggleLikeCommentUseCase.execute(useCasePayload);
 
     // Assert
+    expect(mockThreadRepository.verifyThreadAvailability)
+      .toBeCalledWith(useCasePayload.threadId);
     expect(mockCommentRepository.checkCommentIsExist)
       .toBeCalledWith({
         threadId: useCasePayload.threadId,

@@ -62,7 +62,7 @@ describe('LikeRepositoryPostgres', () => {
       const likeRepositoryPostgres = new LikeRepositoryPostgres(pool, {});
 
       // Act
-      await LikesTableTestHelper.addLike(newLike);
+      await LikesTableTestHelper.removeLike(newLike);
       const addedLike = await likeRepositoryPostgres.toggleLike(newLike);
       const like = await LikesTableTestHelper
         .getLikeByCommentIdAndOwner(newLike);

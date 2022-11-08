@@ -1,12 +1,14 @@
 const NewLike = require('../../Domains/likes/entities/NewLike');
 
 class ToggleLikeCommentUseCase {
-  constructor({ commentRepository, likeRepository }) {
+  constructor({ threadRepository, commentRepository, likeRepository }) {
+    this._threadRepository = threadRepository;
     this._commentRepository = commentRepository;
     this._likeRepository = likeRepository;
   }
 
   async execute(useCasePayload) {
+    await this._threadRepository.verifyThreadAvailability(useCasePayload.threadId);
     await this._commentRepository.checkCommentIsExist({
       threadId: useCasePayload.threadId,
       commentId: useCasePayload.commentId,
