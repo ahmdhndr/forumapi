@@ -65,17 +65,16 @@ class ReplyRepositoryPostgres {
     }
   }
 
-  async getRepliesByThreadId(id) {
+  async getRepliesByCommentId(commentId) {
     const query = {
-      text: `SELECT replies.id, comments.id AS comment_id, replies.content,
+      text: `SELECT replies.id, replies.comment_id, replies.content,
   replies.date, replies.is_deleted, users.username
               FROM replies
-              INNER JOIN comments ON replies.comment_id = comments.id
               INNER JOIN users ON replies.owner = users.id
-              WHERE comments.thread_id = $1
+              WHERE replies.comment_id = $1
               ORDER BY replies.date ASC
               `,
-      values: [id],
+      values: [commentId],
     };
 
     const result = await this._pool.query(query);

@@ -33,12 +33,16 @@ class CommentRepositoryPostgres {
     };
 
     const result = await this._pool.query(query);
-    return result.rows;
+    return result.rows.map((comment) => new DetailComment({
+      ...comment,
+      likeCount: 0,
+      replies: [],
+    }));
   }
 
   async checkCommentIsExist({ threadId, commentId }) {
     const query = {
-      text: `SELECT comments.id
+      text: `SELECT 1
               FROM comments
               INNER JOIN threads ON comments.thread_id = threads.id
               WHERE threads.id = $1

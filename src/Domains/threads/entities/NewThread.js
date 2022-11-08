@@ -4,9 +4,9 @@ class NewThread {
 
     const { title, body, owner } = payload;
 
-    this.title = payload.title;
-    this.body = payload.body;
-    this.owner = payload.owner;
+    this.title = title;
+    this.body = body;
+    this.owner = owner;
   }
 
   _verifyPayload({ title, body, owner }) {

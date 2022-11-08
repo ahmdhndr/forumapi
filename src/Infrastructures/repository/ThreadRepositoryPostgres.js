@@ -3,11 +3,10 @@ const AddedThread = require('../../Domains/threads/entities/AddedThread');
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 
 class ThreadRepositoryPostgres extends ThreadRepository {
-  constructor(pool, idGenerator, dateGenerator) {
+  constructor(pool, idGenerator) {
     super();
     this._pool = pool;
     this._idGenerator = idGenerator;
-    this._dateGenerator = dateGenerator;
   }
 
   async addThread(newThread) {
