@@ -65,10 +65,10 @@ const createServer = async (container) => {
       plugin: replies,
       options: { container },
     },
-    // {
-    //   plugin: likes,
-    //   options: { container },
-    // },
+    {
+      plugin: likes,
+      options: { container },
+    },
   ]);
 
   server.route({

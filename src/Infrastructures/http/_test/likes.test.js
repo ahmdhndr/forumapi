@@ -27,11 +27,40 @@ describe('endpoint concerning on liking a comment', () => {
       const { accessToken, userId } = await ServerTestHelper
         .getAccessTokenAndUserIdHelper({ server });
 
-      const threadId = 'thread-234';
-      const commentId = 'comment-234';
+      const threadId = 'thread-123';
+      const commentId = 'comment-123';
 
       await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
       await CommentsTableTestHelper.addComment({ id: commentId, threadId, owner: userId });
+
+      // Action
+      const response = await server.inject({
+        method: 'PUT',
+        url: `/threads/${threadId}/comments/${commentId}/likes`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
+
+    it('should response 200 status code when unlike', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      const { accessToken, userId } = await ServerTestHelper
+        .getAccessTokenAndUserIdHelper({ server });
+
+      const threadId = 'thread-123';
+      const commentId = 'comment-123';
+
+      await ThreadsTableTestHelper.addThread({ id: threadId, owner: userId });
+      await CommentsTableTestHelper.addComment({ id: commentId, threadId, owner: userId });
+      await LikesTableTestHelper.addLike({ commentId, owner: userId });
 
       // Action
       const response = await server.inject({
