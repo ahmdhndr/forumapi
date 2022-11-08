@@ -6,12 +6,14 @@ const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper
 const ServerTestHelper = require('../../../../tests/ServerTestHelper');
 const createServer = require('../createServer');
 const container = require('../../container');
+const LikesTableTestHelper = require('../../../../tests/LikesTableTestHelper');
 
 describe('/threads endpoint', () => {
   afterEach(async () => {
     await UsersTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await CommentsTableTestHelper.cleanTable();
+    await RepliesTableTestHelper.cleanTable();
   });
 
   afterAll(async () => {
@@ -126,6 +128,22 @@ describe('/threads endpoint', () => {
   });
 
   describe('when GET /threads/{threadsId}', () => {
+    it('should respond with 404 if thread does not exist', async () => {
+      // Arrange
+      const server = await createServer(container);
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: '/threads/thread-xxx',
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread tidak ditemukan');
+    });
+
     it('should return 200 with thread details, comments and replies', async () => {
       // Arrange
       const server = await createServer(container);
@@ -139,6 +157,7 @@ describe('/threads endpoint', () => {
       await CommentsTableTestHelper.addComment({ id: 'comment-456', threadId, owner: 'user-123' });
       await RepliesTableTestHelper.addReply({ id: 'reply-123', commentId: 'comment-123', owner: 'user-123' });
       await RepliesTableTestHelper.addReply({ id: 'reply-456', commentId: 'comment-456', owner: 'user-123' });
+      await LikesTableTestHelper.addLike({ id: 'like-123', commentId: 'comment-123', owner: 'user-123' });
 
       // Action
       const response = await server.inject({
@@ -154,6 +173,8 @@ describe('/threads endpoint', () => {
       expect(responseJson.data.thread.comments).toHaveLength(2);
       expect(responseJson.data.thread.comments[0].replies).toHaveLength(1);
       expect(responseJson.data.thread.comments[1].replies).toHaveLength(1);
+      expect(responseJson.data.thread.comments[0].likeCount).toEqual(1);
+      expect(responseJson.data.thread.comments[1].likeCount).toEqual(0);
     });
 
     it('should return 200 with thread details, and deleted comment array', async () => {
