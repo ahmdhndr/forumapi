@@ -6,6 +6,7 @@ const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 const AddedComment = require('../../../Domains/comments/entities/AddedComment');
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError');
+const DetailComment = require('../../../Domains/comments/entities/DetailComment');
 
 describe('CommentRepositoryPostgres', () => {
   beforeAll(async () => {
@@ -105,8 +106,24 @@ describe('CommentRepositoryPostgres', () => {
 
       // Assert
       expect(listOfComments).toEqual([
-        { ...aComment, username: 'erudev', is_deleted: false },
-        { ...bComment, username: 'erudev', is_deleted: false },
+        new DetailComment(
+          {
+            ...aComment,
+            username: 'erudev',
+            is_deleted: false,
+            likeCount: 0,
+            replies: [],
+          },
+        ),
+        new DetailComment(
+          {
+            ...bComment,
+            username: 'erudev',
+            is_deleted: false,
+            likeCount: 0,
+            replies: [],
+          },
+        ),
       ]);
     });
 

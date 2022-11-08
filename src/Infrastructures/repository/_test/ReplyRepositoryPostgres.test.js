@@ -133,8 +133,8 @@ describe('ReplyRepositoryPostgres', () => {
     });
   });
 
-  describe('getRepliesByThreadId function', () => {
-    it('should return all replies in a thread', async () => {
+  describe('getRepliesByCommentId function', () => {
+    it('should return all replies in a comment', async () => {
       // Arrange
       await UsersTableTestHelper.addUser({ id: 'user-456', username: 'johndoe' });
       await UsersTableTestHelper.addUser({ id: 'user-789', username: 'janedoe' });
@@ -145,10 +145,10 @@ describe('ReplyRepositoryPostgres', () => {
 
       const replies = [
         {
-          id: 'reply-123', commentId: 'comment-456', content: 'Balasan a', date: '2021',
+          id: 'reply-123', content: 'Balasan a', date: '2021',
         },
         {
-          id: 'reply-456', commentId: 'comment-456', content: 'Balasan b', date: '2022',
+          id: 'reply-456', content: 'Balasan b', date: '2022',
         },
       ];
 
@@ -157,13 +157,14 @@ describe('ReplyRepositoryPostgres', () => {
         { ...replies[1], username: 'janedoe' },
       ];
 
-      await RepliesTableTestHelper.addReply({ ...replies[0], owner: 'user-456' });
-      await RepliesTableTestHelper.addReply({ ...replies[1], owner: 'user-789' });
+      await RepliesTableTestHelper.addReply({ ...replies[0], owner: 'user-456', commentId: 'comment-456' });
+      await RepliesTableTestHelper.addReply({ ...replies[1], owner: 'user-789', commentId: 'comment-456' });
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const listOfReplies = await replyRepositoryPostgres.getRepliesByThreadId('thread-456');
+      const listOfReplies = await replyRepositoryPostgres
+        .getRepliesByCommentId('comment-456');
 
       // Assert
       expect(listOfReplies).toEqual(expectedReplies);

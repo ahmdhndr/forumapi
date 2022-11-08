@@ -19,6 +19,7 @@ describe('DetailComment entities', () => {
       username: true,
       content: [],
       date: {},
+      likeCount: '0',
       replies: 'replies',
     };
 
@@ -33,6 +34,7 @@ describe('DetailComment entities', () => {
       username: 'erudev',
       content: 'Sebuah komentar',
       date: '2022',
+      likeCount: 0,
       replies: [],
     };
 
@@ -44,6 +46,26 @@ describe('DetailComment entities', () => {
     expect(detailComment.username).toEqual(payload.username);
     expect(detailComment.content).toEqual(payload.content);
     expect(detailComment.date).toEqual(payload.date);
+    expect(detailComment.likeCount).toEqual(payload.likeCount);
     expect(detailComment.replies).toEqual(payload.replies);
+  });
+
+  it('should return \'**komentar telah dihapus**\' when is_deleted is true', () => {
+    // Arrange
+    const payload = {
+      id: 'comment-123',
+      username: 'erudev',
+      content: 'Sebuah komentar',
+      date: '2022',
+      is_deleted: true,
+      likeCount: 0,
+      replies: [],
+    };
+
+    // Action
+    const detailComment = new DetailComment(payload);
+
+    // Assert
+    expect(detailComment.content).toEqual('**komentar telah dihapus**');
   });
 });
